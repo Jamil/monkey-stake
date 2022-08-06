@@ -1,15 +1,30 @@
 button {
   cursor: pointer;
-  font-family: "Plus Jakarta";
-  background-color: #FF8116;
+  font-family: "Montserrat";
+  background-color: #fff;
   border: none;
   font-size: 16px;
-  border-radius: 8px;
-  padding: 12px 24px;
-  transition-duration: 150ms;
-  display: flex;
-  align-items: center;
-  letter-spacing: 0.5px;
-  line-height: 28px;
-  color: #fff;
+  border-radius: 5px;
+  padding: 8px 20px;
+  line-height: 1.5;
+  color: #ff0086;
+  font-weight: 500;
+
+  transition: all .3s ease 0s;
+  -webkit-transition: all .3s ease 0s;
+
+  &.cta {
+    background-color: #fae568;
+    color: #050411;
+  }
+
+  &:hover {
+    background-color: #ff0086;
+    color: #fff;
+
+    &.cta {
+      background-color: #050411;
+      color: #fae568;
+    }
+  }
 }

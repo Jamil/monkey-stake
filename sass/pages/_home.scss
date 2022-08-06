@@ -1,0 +1,114 @@
+#home {
+  color: #242534;
+  background-color: #eef1f5;
+  
+  .content {
+    p, li, a {
+      font-family: "Montserrat", sans-serif;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: "Gochi Hand", cursive;
+      line-height: 1.5;
+    }
+
+    #top-section {
+      background: radial-gradient(at center center,#211b62 0,#000 95%);
+      color: #fff;
+
+      #description-left {
+        max-width: 60%;
+        padding-right: 32px;
+
+        #banana-desc {
+          font-size: 22px;
+          margin: 0px;
+        }
+
+        #stake-cta {
+          color: #fae568;
+          font-size: 20px;
+          font-weight: 500;
+          margin: 5px 0px;
+        }
+
+        #icon-row {
+          display: flex;
+
+          img {
+            width: 30px;
+            height: 30px;
+            margin: 3px 5px;
+            display: block;
+            cursor: pointer;
+          }
+        }
+
+        #question {
+          text-decoration: none;
+          cursor: pointer;
+          font-size: 20px;
+          font-weight: 500;
+          margin: 5px 0px;
+          color: #ff0086;
+        }
+      }
+
+      #description-right {
+        max-width: 400px;
+      }
+
+      .stake-progress-text {
+        font-size: 28px;
+        margin: 0;
+      }
+
+      #stake-progress {
+        display: flex;
+        background-color: #312e4e;
+        border-radius: 6px;
+        overflow: hidden;
+
+        div {
+          height: 12px;
+
+          &:first-child{
+            background-color: #fae568;
+            border-radius: 6px;
+          }
+        }
+      }
+    }
+
+    #bottom-section {
+      max-width: 1145px;
+      margin: auto;
+      display: flex;
+      padding: 0px 24px;
+
+      #bgrList {
+        flex: 1;
+        background: radial-gradient(at center center,#211b62 0,#000 95%);
+        padding: 24px;
+  
+        h2 {
+          color: #ff0086;
+          margin-top: 0px;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1050px)  {
+  #home {
+    .content {
+      #top-section {
+        #description-right {
+          max-width: 300px;
+        }
+      }
+    }
+  }
+}
