@@ -18,11 +18,39 @@ const images = [
   '/assets/monkeys/15.png',
 ]
 
-const lessImages = images.slice(0, 12)
+const traitData = [
+  {img: "/assets/traits/Crown.png", percent: 100},
+  {img: "/assets/traits/Banana-Skin.png", percent: 50},
+  {img: "/assets/traits/Banana-mouth.png", percent: 30},
+  {img: "/assets/traits/Labcoat.png", percent: 25},
+  {img: "/assets/traits/Leopard.png", percent: 16},
+  {img: "/assets/traits/Money.png", percent: 15},
+  {img: "/assets/traits/Party-Hat.png", percent: 14},
+  {img: "/assets/traits/Laser-Eyes-Green.png", percent: 14},
+  {img: "/assets/traits/Laser-Eyes-Red.png", percent: 14},
+  {img: "/assets/traits/Gold-Teeth.png", percent: 14},
+  {img: "/assets/traits/Diamond-Teeth.png", percent: 14},
+  {img: "/assets/traits/Space-Suit.png", percent: 14},
+  {img: "/assets/traits/Rainbow.png", percent: 14},
+  {img: "/assets/traits/Space.png", percent: 14},
+  {img: "/assets/traits/Gold.png", percent: 14},
+  {img: "/assets/traits/Rainbow-monkey.png", percent: 14},
+  {img: "/assets/traits/Magician-Hat.png", percent: 12},
+  {img: "/assets/traits/Galaxy.png", percent: 12},
+  {img: "/assets/traits/Viking-Helmet.png", percent: 10},
+  {img: "/assets/traits/Pirate-Hat.png", percent: 10},
+  {img: "/assets/traits/Sailor-Hat.png", percent: 10},
+  {img: "/assets/traits/Army-Helmet.png", percent: 10},
+  {img: "/assets/traits/Army-Vest.png", percent: 10},
+  {img: "/assets/traits/Cyborg.png", percent: 10},
+  {img: "/assets/traits/Bitcoin-Eyes.png", percent: 7},
+  {img: "/assets/traits/Bitcoin-Tshirt.png", percent: 6},
+  {img: "/assets/traits/Bitcoin-Cap.png", percent: 5},
+  {img: "/assets/traits/Bloodshot.png", percent: 5},
+  {img: "/assets/traits/Blind.png", percent: 5},
+]
 
 const Home = () => {
-  
-
   return (
     <div id="home">
       <div className="content">
@@ -99,38 +127,40 @@ const Home = () => {
               <div style={{flex: 2260}}></div>
               <div style={{flex: 2500 - 2260}}></div>
             </div>
-            <div>
-              <div>
+            <div id="personal-stats-row">
+              <div className='personal-stats-card'>
                 <h3>Lifetime $BANANAS earned</h3>
-                <div>
+                <div style={{display: "flex", alignItems: "center"}}>
                   <p>672.136</p>
-                  <img/>
+                  <img src='/assets/banana.png'/>
                 </div>
               </div>
-              <div>
+              <div className='personal-stats-card'>
                 <h3>$BANANAS held in wallet</h3>
-                <div>
+                <div style={{display: "flex", alignItems: "center"}}>
                   <p>449.175</p>
-                  <img/>
+                  <img src='/assets/banana.png'/>
                 </div>
               </div>
-              <div>
+              <div className='personal-stats-card'>
                 <h3>Current Harvest Pool</h3>
-                <div>
+                <div style={{display: "flex", alignItems: "center"}}>
                   <p>57.136</p>
-                  <img/>
+                  <img src='/assets/banana.png'/>
                   <button className='cta'>Harvest</button>
                 </div>
                 <h4>Earning 6.7 $BANANA/Day</h4>
               </div>
             </div>
-            <div>
-              <div>
-                <p>No Monkeys to stake</p>
-                <button>Buy on Byzantion</button>
+            <div id="wallet-data-row">
+              <div className='wallet-data-card'>
+                <h3>No Monkeys to stake</h3>
+                <a target="_blank" href='https://byzantion.xyz/marketplace/bitcoin-monkeys'>
+                  <button>Buy on Byzantion</button>
+                </a>
               </div>
-              <div>
-                <p>3 Monkeys staked</p>
+              <div className='wallet-data-card'>
+                <h3>3 Monkeys staked</h3>
               </div>
             </div>
           </div>
@@ -155,6 +185,14 @@ const Home = () => {
           </div>
           <div id='bgrList'>
             <h2>BANANA Generation Rate (BGR)</h2>
+            <div id="traitGrid">
+              {traitData.map(t => (
+                <div className='trait-item'>
+                  <img className='trait-img' src={t.img}/>
+                  <p>+{t.percent}%</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

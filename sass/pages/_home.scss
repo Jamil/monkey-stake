@@ -79,6 +79,82 @@
           }
         }
       }
+
+      #personal-stats-row {
+        display: flex;
+
+        .personal-stats-card {
+          flex: 1;
+          border-radius: 5px;
+          background-color: #423e67;
+          margin-top: 32px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 16px;
+          color: #e7e5fa;
+          
+          &:not(:first-child) {
+            margin-left: 16px;
+          }
+
+          &:not(:last-child) {
+            margin-right: 16px;
+          }
+
+          h3 {
+            font-size: 22px;
+            margin: 0 0 12px;
+          }
+          
+          h4 {
+            font-size: 18px;
+            margin: 0 0 10px;
+          }
+
+          p {
+            color: #fae568;
+            font-weight: 600;
+            font-size: 30px;
+            margin: 0;
+            margin-right: 12px;
+          }
+          
+          img { 
+            display: block;
+            height: 30px;
+          }
+        }
+      }
+
+      #wallet-data-row {
+        display: flex;
+
+        .wallet-data-card {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 16px;
+          color: #e7e5fa;
+          border-radius: 5px;
+          background-color: #423e67;
+          margin-top: 32px;
+
+          &:not(:first-child) {
+            margin-left: 16px;
+          }
+
+          &:not(:last-child) {
+            margin-right: 16px;
+          }
+
+          h3 {
+            font-size: 22px;
+            margin: 0 0 12px;
+          }
+        }
+      }
     }
 
     #bottom-section {
@@ -88,13 +164,44 @@
       padding: 0px 24px;
 
       #bgrList {
-        flex: 1;
+        flex: 0.8;
         background: radial-gradient(at center center,#211b62 0,#000 95%);
         padding: 24px;
+
+        #traitGrid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          grid-gap: 12px;
+        }
   
         h2 {
           color: #ff0086;
           margin-top: 0px;
+        }
+
+        .trait-item {
+          background: #ffffff1a;
+          border-radius: 8px;
+          width: calc(20% - 10px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          .trait-img {
+            width: 60px;
+            height: 60px;
+          }
+          
+          p {
+            color: #ffe668;
+            font-weight: 600;
+            margin: 0px;
+            text-align: center;
+            background-color: #ffffff52;
+            border-radius: 0 0 8px 8px;
+            width: 100%;
+          }
         }
       }
     }
@@ -107,6 +214,28 @@
       #top-section {
         #description-right {
           max-width: 300px;
+        }
+      }
+
+      #bottom-section {
+        #bgrList {
+          .trait-item {
+            width: calc(25% - 9px);
+          }
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 800px)  {
+  #home {
+    .content {
+      #bottom-section {
+        #bgrList {
+          .trait-item {
+            width: calc(16.6% - 10px);
+          }
         }
       }
     }
