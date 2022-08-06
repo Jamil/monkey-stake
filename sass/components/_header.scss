@@ -1,0 +1,40 @@
+#header {
+  width: calc(100vw);
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  #center {
+    height: 113px;
+    display: flex;
+    align-items: flex-start;
+  }  
+
+  #background-container {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+
+    #background-src {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.10)), url("/assets/car.png");
+      background-position: center;
+      background-size: cover;
+      transform: scale(1.5);
+      filter: blur(35px);
+    }
+  }
+
+  @media only screen and (max-width: 600px)  {
+    height: 130px;
+
+    #center {
+      transform: scale(0.6);
+    }
+  }
+}
