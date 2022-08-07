@@ -35,6 +35,7 @@
 
         #icon-row {
           display: flex;
+          padding-bottom: 6px;
 
           img {
             width: 30px;
@@ -42,6 +43,17 @@
             margin: 3px 5px;
             display: block;
             cursor: pointer;
+          }
+        }
+
+        #buy-sell-link {
+          text-decoration: none;
+          color: #5fecef;
+          font-weight: 500;
+          padding-top: 12px;
+
+          &:hover {
+            color: #167677
           }
         }
 
@@ -117,12 +129,16 @@
             font-weight: 600;
             font-size: 30px;
             margin: 0;
-            margin-right: 12px;
+            margin-right: 10px;
           }
           
           img { 
             display: block;
             height: 30px;
+          }
+
+          button {
+            margin-left: 10px;
           }
         }
       }
@@ -155,6 +171,31 @@
           }
         }
       }
+
+      #disconnected-wallet-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        color: #e7e5fa;
+        border-radius: 5px;
+        background-color: #423e67;
+        margin-top: 32px;
+
+        button {
+          margin: 0px 16px;
+        }
+
+        .pink {
+          background-color: #ff0086;
+          color: #fff;
+
+          &:hover {
+            color: #ff0086;
+            background-color: #fff;
+          }
+        }
+      }
     }
 
     #bottom-section {
@@ -162,6 +203,14 @@
       margin: auto;
       display: flex;
       padding: 0px 24px;
+
+      #title {
+        font-size: 28px;
+      }
+
+      #subtitle {
+        font-size: 22px;
+      }
 
       #bgrList {
         flex: 0.8;

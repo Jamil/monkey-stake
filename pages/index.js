@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { AppConfig, UserSession, showConnect } from '@stacks/connect'
+import axios from 'axios';
+import { StacksMainnet } from '@stacks/network';
+import { callReadOnlyFunction, ClarityType, cvToString, cvToValue, listCV } from '@stacks/transactions';
+import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 
 const images = [
   '/assets/monkeys/3.png',
@@ -50,7 +55,110 @@ const traitData = [
   {img: "/assets/traits/Blind.png", percent: 5},
 ]
 
+const appConfig = new AppConfig(['publish_data']);
+const userSession = new UserSession({ appConfig });
+const stacksNet = 'mainnet';
+
 const Home = () => {
+  const [auth, setAuth] = useState({
+    login: false,
+    wallet_id: "",
+  })
+
+  const [stakedAmount, setStakedAmount] = useState(0);
+  const [lifetimeEarned, setLifetimeEarned] = useState(0);
+  const [bananasHeld, setBananasHeld] = useState(0);
+  const [currentPool, setCurrentPool] = useState(0);
+  const [earningAmount, setEarningAmount] = useState(0);
+
+  const [stakedIds, setStakedIds] = useState(0);
+
+  useEffect(() => {
+    (async () => {
+      if (userSession.isSignInPending()) {
+        await userSession.handlePendingSignIn();
+        const userData = userSession.loadUserData();
+
+        setAuth({
+          login: true,
+          wallet_id: userData.profile.stxAddress[stacksNet]
+        })
+      } else if (userSession.isUserSignedIn()) {
+        const userData = userSession.loadUserData();
+
+        setAuth({
+          login: true,
+          wallet_id: userData.profile.stxAddress[stacksNet],
+        })
+      }
+    })()
+  }, [])
+
+  const walletId = auth.wallet_id;
+
+  const authenticated = () => {
+    showConnect({
+      appDetails: {
+        name: 'Bitcoin Monkeys',
+        icon: "https://cdn.discordapp.com/attachments/798985555546341376/884824197866618880/melbrot_12.png"
+      },
+      redirectTo: '/',
+      onFinish: () => {
+        const userData = userSession.loadUserData();
+        setAuth({
+          login: true,
+          wallet_id: userData.profile.stxAddress[stacksNet]
+        })
+      },
+      userSession: userSession,
+    })
+  }
+
+  const disconnect = () => {
+    setAuth({
+      login: false,
+      wallet_id: ""
+    })
+    userSession.signUserOut();
+  }
+
+  useEffect(() => {
+    if(auth.login) {
+      makeApiCalls();
+    }
+  }, [auth.login])
+
+  const makeApiCalls = async () => {
+    const { data: balances } = await axios.get("https://stacks-node-api.mainnet.stacks.co/extended/v1/address/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking/balances")
+
+    setStakedAmount(balances.non_fungible_tokens['SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys::bitcoin-monkeys'].count)
+
+    const { data: walletContents } = await axios.get(`https://stacks-node-api.mainnet.stacks.co/extended/v1/address/${walletId}/balances`)
+
+    setBananasHeld(walletContents.fungible_tokens['SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-bananas::BANANA']?.balance || 0);
+
+    try {
+      const options = {
+        contractAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+        contractName: "btc-monkeys-staking",
+        functionName: "get-staked-nfts",
+        functionArgs: [principalCV(`${walletId}`)],
+        network: new StacksMainnet(),
+        senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+      };
+  
+      const result = await callReadOnlyFunction(options);
+      
+      if (result.type === ClarityType.List) {
+        setStakedIds(result.list.map(i => parseInt(cvToValue(i))))
+      } else if (result.type === ClarityType.ResponseErr) {
+        throw new Error(`kv-store contract error: ${result.value.data}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return (
     <div id="home">
       <div className="content">
@@ -82,13 +190,15 @@ const Home = () => {
                   <a target="_blank" href='https://instagram.com/BTCMonkeys'><img src='/assets/instagram.svg'/></a>
                   <a target="_blank" href='https://bitcoinmonkeys.io/'><img src='/assets/website.svg'/></a>
                 </div>
+                <a id="buy-sell-link" href="https://gamma.io/collections/bitcoin-monkeys" target="_blank">Buy and Sell Bitcoin Monkeys on Gamma</a>
               </div>
               <div id="description-right">
                 <ul style={{
                   listStyle: "none",
                   display: "flex",
                   flexWrap: "wrap",
-                  padding: 0
+                  padding: 0,
+                  marginTop: 0
                 }}>
                   {/** images **/}
                   {images.map(i => (
@@ -104,15 +214,15 @@ const Home = () => {
                 <p style={{
                   fontSize: "12px"
                 }}>*BANANA is a utility token used in the Bitcoin Monkeys ecosystem. It is NOT an investment and has NO economic value.</p>
-                <div style={{
+                {auth.login && <div style={{
                   display: "flex",
                   alignItems: "center"
                 }}>
                   <h3 style={{
                     margin: "0px",
                     marginRight: "16px"
-                  }}>SPK7...F3CF</h3><button>Disconnect</button>
-                </div>
+                  }}>{walletId.slice(0, 4)}...{walletId.slice(walletId.length-4)}</h3><button onClick={() => disconnect()}>Disconnect</button>
+                </div>}
               </div>
             </div>
             <div style={{
@@ -120,49 +230,58 @@ const Home = () => {
               justifyContent: "space-between",
               marginTop: "16px"
             }}>
-              <h2 className='stake-progress-text'>90% Bitcoin Monkeys Staked</h2>
-              <h2 className='stake-progress-text'>2260/2500</h2>
+              <h2 className='stake-progress-text'>{~~(stakedAmount/25)}% Bitcoin Monkeys Staked</h2>
+              <h2 className='stake-progress-text'>{stakedAmount}/2500</h2>
             </div>
             <div id="stake-progress">
-              <div style={{flex: 2260}}></div>
-              <div style={{flex: 2500 - 2260}}></div>
+              <div style={{flex: stakedAmount}}></div>
+              <div style={{flex: 2500 - stakedAmount}}></div>
             </div>
-            <div id="personal-stats-row">
+            {auth.login && <div id="personal-stats-row">
               <div className='personal-stats-card'>
                 <h3>Lifetime $BANANAS earned</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>672.136</p>
+                  <p>{lifetimeEarned}</p>
                   <img src='/assets/banana.png'/>
                 </div>
               </div>
               <div className='personal-stats-card'>
                 <h3>$BANANAS held in wallet</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>449.175</p>
+                  <p>{~~(bananasHeld / 10000)/100}</p>
                   <img src='/assets/banana.png'/>
                 </div>
               </div>
               <div className='personal-stats-card'>
                 <h3>Current Harvest Pool</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>57.136</p>
+                  <p>{currentPool}</p>
                   <img src='/assets/banana.png'/>
                   <button className='cta'>Harvest</button>
                 </div>
-                <h4>Earning 6.7 $BANANA/Day</h4>
+                <h4>Earning {earningAmount} $BANANA/Day</h4>
               </div>
-            </div>
-            <div id="wallet-data-row">
+            </div>}
+            {auth.login && <div id="wallet-data-row">
               <div className='wallet-data-card'>
                 <h3>No Monkeys to stake</h3>
-                <a target="_blank" href='https://byzantion.xyz/marketplace/bitcoin-monkeys'>
-                  <button>Buy on Byzantion</button>
+                <a target="_blank" href='https://gamma.io/collections/bitcoin-monkeys'>
+                  <button>Buy on Gamma</button>
                 </a>
               </div>
               <div className='wallet-data-card'>
-                <h3>3 Monkeys staked</h3>
+                <h3>{stakedIds?.length || 0} Monkeys staked</h3>
+                {stakedIds.map(id => (
+                  <p>Bitcoin Monkey #{id}</p>
+                ))}
               </div>
-            </div>
+            </div>}
+            {!auth.login && <div id="disconnected-wallet-card">
+              <button className='pink' onClick={() => authenticated()}>Connect to Stake</button>
+              <a href="https://gamma.io/collections/bitcoin-monkeys" target="_blank">
+                <button>Buy on Gamma</button>
+              </a>
+            </div>}
           </div>
         </div>
         <div id="bottom-section">
@@ -170,11 +289,11 @@ const Home = () => {
             flex: 1,
             paddingRight: "24px"
           }}>
-            <h2>What is Bitcoin Monkey Staking?</h2>
+            <h2 id="title">What is Bitcoin Monkey Staking?</h2>
             <p>To earn BANANA, Monkeys will need to be Staked. Each of the 2500 Monkey's will earn BANANA at a certain Banana Generation Rate (BGR). This will be based on the total of the following:</p>
             <p><b>Baseline BGR:</b> 2 BANANA gained every 24 hours, assuming 144 blocks per day (all Monkeys have the baseline BGR rate)</p>
             <p><b>Bonus BGR:</b> A bonus percentage on top of the baseline BGR will be applicable to certain Monkey traits. With BANANA as our backbone utility token for the ecosystem, there are still plenty of treasures in The Jungle to uncover with Bitcoin Monkeys! And so, the legend of the Monkeys continues...</p>
-            <h3>How much does Staking cost?</h3>
+            <h3 id="subtitle">How much does Staking cost?</h3>
             <p>Staking/unstaking will cost a small fee of <b>5 STX</b> per Monkey. This is for a number of reasons:</p>
             <ul>
               <li>2 STX will be used to fund the continuous building, development and maintenance of the Staking &amp; BANANA ecosystem.</li>
