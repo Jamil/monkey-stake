@@ -71,7 +71,7 @@ const Home = () => {
   const [currentPool, setCurrentPool] = useState(0);
   const [earningAmount, setEarningAmount] = useState(0);
 
-  const [stakedIds, setStakedIds] = useState(0);
+  const [stakedIds, setStakedIds] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -123,16 +123,19 @@ const Home = () => {
   }
 
   useEffect(() => {
+    publicApiCalls();
     if(auth.login) {
-      makeApiCalls();
+      privateApiCalls();
     }
   }, [auth.login])
 
-  const makeApiCalls = async () => {
+  const publicApiCalls = async () => {
     const { data: balances } = await axios.get("https://stacks-node-api.mainnet.stacks.co/extended/v1/address/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-staking/balances")
 
     setStakedAmount(balances.non_fungible_tokens['SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys::bitcoin-monkeys'].count)
+  }
 
+  const privateApiCalls = async () => {
     const { data: walletContents } = await axios.get(`https://stacks-node-api.mainnet.stacks.co/extended/v1/address/${walletId}/balances`)
 
     setBananasHeld(walletContents.fungible_tokens['SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.btc-monkeys-bananas::BANANA']?.balance || 0);
@@ -270,7 +273,7 @@ const Home = () => {
                 </a>
               </div>
               <div className='wallet-data-card'>
-                <h3>{stakedIds?.length || 0} Monkeys staked</h3>
+                <h3>{stakedIds.length} Monkeys staked</h3>
                 {stakedIds.map(id => (
                   <p>Bitcoin Monkey #{id}</p>
                 ))}
