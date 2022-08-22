@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { AppConfig, UserSession, showConnect } from '@stacks/connect'
+import { AppConfig, UserSession, showConnect, openContractCall } from '@stacks/connect'
 import axios from 'axios';
 import { StacksMainnet } from '@stacks/network';
-import { callReadOnlyFunction, ClarityType, cvToString, cvToValue, listCV } from '@stacks/transactions';
+import { callReadOnlyFunction, ClarityType, cvToValue } from '@stacks/transactions';
 import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 
 const images = [
@@ -55,6 +55,22 @@ const traitData = [
   {img: "/assets/traits/Blind.png", percent: 5},
 ]
 
+const options = (mainnet) => ({
+  contractAddress: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
+  contractName: 'btc-monkeys-staking',
+  functionName: 'harvest',
+  functionArgs: [],
+  network: mainnet,
+  appDetails: {
+    name: 'Bitcoin Monkeys',
+    icon: '',
+  },
+  onFinish: data => {
+    console.log("broadcast")
+  },
+  postConditions: []
+})
+
 const appConfig = new AppConfig(['publish_data']);
 const userSession = new UserSession({ appConfig });
 const stacksNet = 'mainnet';
@@ -72,6 +88,7 @@ const Home = () => {
   const [earningAmount, setEarningAmount] = useState(0);
 
   const [stakedIds, setStakedIds] = useState([]);
+  const [mainnet, setMainnet] = useState(new StacksMainnet());
 
   useEffect(() => {
     (async () => {
@@ -146,7 +163,7 @@ const Home = () => {
         contractName: "btc-monkeys-staking",
         functionName: "get-staked-nfts",
         functionArgs: [principalCV(`${walletId}`)],
-        network: new StacksMainnet(),
+        network: mainnet,
         senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
       };
   
@@ -154,6 +171,55 @@ const Home = () => {
       
       if (result.type === ClarityType.List) {
         setStakedIds(result.list.map(i => parseInt(cvToValue(i))))
+      } else if (result.type === ClarityType.ResponseErr) {
+        throw new Error(`kv-store contract error: ${result.value.data}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    try {
+      const options = {
+        contractAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+        contractName: "btc-monkeys-staking",
+        functionName: "check-staker",
+        functionArgs: [principalCV(`${walletId}`)],
+        network: mainnet,
+        senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+      };
+  
+      const result = await callReadOnlyFunction(options);
+
+      const { data } = result.value.value;
+      const totalBGR = parseInt(data['total-bgr'].value);
+      const lifetime = parseInt(data['lifetime-points'].value);
+
+      setLifetimeEarned(lifetime);
+      setEarningAmount(totalBGR);
+
+      // if (result.type === ClarityType.UInt) {
+      //   console.log(result.value)
+      // } else if (result.type === ClarityType.ResponseErr) {
+      //   throw new Error(`kv-store contract error: ${result.value.data}`);
+      // }
+    } catch (e) {
+      console.error(e);
+    }
+
+    try {
+      const options = {
+        contractAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+        contractName: "btc-monkeys-staking",
+        functionName: "check-harvest",
+        functionArgs: [principalCV(`${walletId}`)],
+        network: mainnet,
+        senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+      };
+  
+      const result = await callReadOnlyFunction(options);
+      
+      if (result.type === ClarityType.UInt) {
+        setCurrentPool(parseInt(result.value))
       } else if (result.type === ClarityType.ResponseErr) {
         throw new Error(`kv-store contract error: ${result.value.data}`);
       }
@@ -181,7 +247,7 @@ const Home = () => {
                 <img style={{
                   width: "230px"
                 }} src='/assets/logo.png'/>
-                <h3 id="banana-desc">BANANA sits at the core of the Bitcoin Monkey ecosystem. As the ecosystem grows, more utility will be added – increasing the utility of BANANA. However, there will only be a supply of 1,000,000 BANANA. Each monkey earns 2 BANANA per day.</h3>
+                <h3 id="banana-desc">BANANA sits at the core of the Bitcoin Monkey ecosystem. As the ecosystem grows, more utility will be added – increasing the utility of BANANA. However, there will only be a supply of 1,000,000 BANANA. Each monkey earns 1 BANANA per day.</h3>
                 <div style={{
                   display: "flex"
                 }}> 
@@ -244,25 +310,25 @@ const Home = () => {
               <div className='personal-stats-card'>
                 <h3>Lifetime $BANANAS earned</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>{lifetimeEarned}</p>
+                  <p>{~~(lifetimeEarned / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
                 </div>
               </div>
               <div className='personal-stats-card'>
                 <h3>$BANANAS held in wallet</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>{~~(bananasHeld / 10000)/100}</p>
+                  <p>{~~(bananasHeld / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
                 </div>
               </div>
               <div className='personal-stats-card'>
                 <h3>Current Harvest Pool</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>{currentPool}</p>
+                  <p>{~~(currentPool / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta'>Harvest</button>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest</button>
                 </div>
-                <h4>Earning {earningAmount} $BANANA/Day</h4>
+                <h4>Earning {~~(earningAmount/1000)/10} $BANANA/Day</h4>
               </div>
             </div>}
             {auth.login && <div id="wallet-data-row">
@@ -287,7 +353,53 @@ const Home = () => {
             </div>}
           </div>
         </div>
-        <div id="bottom-section">
+        <div id="bgr-section">
+          <h2>BANANA Generation Rate (BGR)</h2>
+          <div id="columns">
+            <div className="traitColumn">
+              <h3>Bitcoin Monkeys</h3>
+              <div id="traitGrid">
+                {traitData.map(t => (
+                  <div className='trait-item'>
+                    <img className='trait-img' src={t.img}/>
+                    <p>+{t.percent}%</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="traitColumn kids">
+              <h3>Monkey Kids</h3>
+              <div id="kidsTraitGrid">
+                <p>COMING SOON</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="description">
+          <div id="text-column">
+            <h2 id="title">What is Bitcoin Monkey Staking?</h2>
+            <p>To earn BANANA, Monkeys (both Bitcoin Monkeys and Monkey Kids Treehouse Club) will need to be Staked. Both collections will earn BANANA at a certain Banana Generation Rate (BGR), however Bitcoin Monkeys will have a far superior Banana Generation Rate than MKTC. BGR will be based on the total of the following:</p>
+            <p><b>Baseline BGR (BM):</b> 1 BANANA gained every 24 hours, assuming 144 blocks per day (all Monkeys have the baseline BGR rate)</p>
+            <p><b>Baseline BGR (MKTC):</b> TBD</p>
+            <p><b>Bonus BGR:</b> A bonus percentage on top of the baseline BGR will be applicable to certain Bitcoin Monkey and Monkey Kids Treehouse Club traits. With BANANA as our backbone utility token for the ecosystem, there are still plenty of treasures in The Jungle to uncover within the Bitcoin Monkeys brand! And so, the legend of the Monkeys continues…</p>
+            <h3 id="subtitle">How much does Staking cost?</h3>
+            <p>Staking will be non custodial for both collections and will be FREE! Unstaking will cost a small fee. This will be different for both Bitcoin Monkeys and Monkey Kids Treehouse Club.</p>
+            <p><b>Bitcoin Monkeys:</b></p>
+            <ul>
+              <li>2 STX will be used to fund the continuous building, development and maintenance Bitcoin Monkey ecosystem.</li>
+              <li>2 STX will be used to help fund the BANANA ecosystem, Monkey Store and other rewards.</li>
+              <li>1 STX will be used to fund the endeavors of the community Jungle Club proposals.</li>
+            </ul>
+            <p><b>Monkey Kids Treehouse Club:</b></p>
+            <ul>
+              <li>?? STX will be used to fund the continuous building, development and maintenance Bitcoin Monkey ecosystem.</li>
+              <li>?? STX will be used to help fund the BANANA ecosystem, Monkey Store and other rewards.</li>
+              <li>?? STX will be used to fund the endeavors of the community Jungle Club proposals.</li>
+            </ul>
+            <p>However there will be no fee for unstaking your Monkeys if they are staked until all 1 million BANANA's have been depleted! Hence, rewarding you for holding and staking your Monkeys!</p>
+          </div>
+        </div>
+        {/* <div id="bottom-section">
           <div style={{
             flex: 1,
             paddingRight: "24px"
@@ -316,7 +428,7 @@ const Home = () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )
