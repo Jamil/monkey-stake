@@ -170,6 +170,20 @@
             margin: 0 0 12px;
           }
         }
+
+        .monkey-list {
+          display: flex;
+          flex-wrap: wrap;
+          -webkit-flex-wrap: wrap;
+          -moz-flex-wrap: wrap;
+          -ms-flex-wrap: wrap;
+          -o-flex-wrap: wrap;
+          grid-gap: 0;
+          gap: 0;
+          max-height: 930px;
+          overflow-x: auto;
+          justify-content: space-evenly;
+        }
       }
 
       #disconnected-wallet-card {

@@ -1,9 +1,35 @@
-const MonkeyItem = (monkey) => {
-  return (
-    <div>
+import axios from "axios";
+import { useEffect, useState } from "react";
 
+const MonkeyItem = ({monkey}) => {
+  const [data, setData] = useState();
+
+  useEffect(() => {
+    (async () => {
+      const res = await axios.get(`https://gamma.io/api/v1/collections/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys/${monkey}`);
+      setData(res.data.data)
+    })()
+  }, [monkey])
+
+  const image = `https://images.gamma.io/ipfs/${data?.token_metadata?.image_url?.toString()?.slice(7)}`;
+  const bgr = data?.nft_token_attributes?.filter(item => item.trait_type == "BGR (%)")?.[0]?.value || 0
+  
+  return data ? (
+    <div style={{
+      borderRadius: "6px",
+      backgroundColor: "#242046",
+      overflow: "hidden",
+      width: "150px",
+      marginBottom: "16px"
+    }}>
+      <img height="150" width="150" src={image}/>
+      <div style={{display: "flex", flexDirection: "column", alignItems: "stretch"}}>
+        <p style={{textAlign: "center", fontWeight: 500, lineHeight: 1.0, margin: "2px"}}>{data?.token_metadata?.name}</p>
+        <p style={{marginBottom: 0, textAlign: "center", padding: "0px 6px"}}>BGR: {bgr*100}%</p>
+        <button style={{margin: "6px"}}>Unstake</button>
+      </div>
     </div>
-  )
+  ) : (<></>)
 }
 
 export default MonkeyItem;

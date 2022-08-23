@@ -4,6 +4,12 @@ import axios from 'axios';
 import { StacksMainnet } from '@stacks/network';
 import { callReadOnlyFunction, ClarityType, cvToValue } from '@stacks/transactions';
 import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
+import MonkeyItem from '../components/monkeyItem';
+
+const contractDetails = {
+  contractAddress: "SPMWNPDCQMCXANG6BYK2TJKXA09BTSTES0VVBXVR",
+  contractName: "private-brown-donkey"
+}
 
 const images = [
   '/assets/monkeys/3.png',
@@ -56,8 +62,8 @@ const traitData = [
 ]
 
 const options = (mainnet) => ({
-  contractAddress: 'SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C',
-  contractName: 'btc-monkeys-staking',
+  contractAddress: contractDetails.contractAddress,
+  contractName: contractDetails.contractName,
   functionName: 'harvest',
   functionArgs: [],
   network: mainnet,
@@ -159,12 +165,12 @@ const Home = () => {
 
     try {
       const options = {
-        contractAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
-        contractName: "btc-monkeys-staking",
-        functionName: "get-staked-nfts",
+        contractAddress: contractDetails.contractAddress,
+        contractName: contractDetails.contractName,
+        functionName: "get-staked-ids",
         functionArgs: [principalCV(`${walletId}`)],
         network: mainnet,
-        senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+        senderAddress: auth.wallet_id,
       };
   
       const result = await callReadOnlyFunction(options);
@@ -208,17 +214,18 @@ const Home = () => {
 
     try {
       const options = {
-        contractAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
-        contractName: "btc-monkeys-staking",
-        functionName: "check-harvest",
+        contractAddress: contractDetails.contractAddress,
+        contractName: contractDetails.contractName,
+        functionName: "get-user-balance",
         functionArgs: [principalCV(`${walletId}`)],
         network: mainnet,
-        senderAddress: "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C",
+        senderAddress: walletId,
       };
   
       const result = await callReadOnlyFunction(options);
       
       if (result.type === ClarityType.UInt) {
+        console.log("setCurrentPool", parseInt(result.value))
         setCurrentPool(parseInt(result.value))
       } else if (result.type === ClarityType.ResponseErr) {
         throw new Error(`kv-store contract error: ${result.value.data}`);
@@ -340,9 +347,11 @@ const Home = () => {
               </div>
               <div className='wallet-data-card'>
                 <h3>{stakedIds.length} Monkeys staked</h3>
-                {stakedIds.map(id => (
-                  <p>Bitcoin Monkey #{id}</p>
-                ))}
+                <div className='monkey-list'>
+                  {stakedIds.map(id => (
+                    <MonkeyItem monkey={id}/>
+                  ))}
+                </div>
               </div>
             </div>}
             {!auth.login && <div id="disconnected-wallet-card">
