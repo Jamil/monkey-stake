@@ -27,4 +27,19 @@ button {
       color: #fae568;
     }
   }
+
+  &.inverted {
+    color: #fff;
+    background-color: #ff0086;
+
+    &:hover {
+      background-color: #fff;
+      color: #ff0086;
+  
+      &.cta {
+        background-color: #fae568;
+        color: #050411;
+      }
+    }
+  }
 }
