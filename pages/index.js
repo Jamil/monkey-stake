@@ -421,7 +421,7 @@ const Home = () => {
             <h2 id="title">What is Bitcoin Monkey Staking?</h2>
             <p>To earn BANANA, Monkeys (both Bitcoin Monkeys and Monkey Kids Treehouse Club) will need to be Staked. Both collections will earn BANANA at a certain Banana Generation Rate (BGR), however Bitcoin Monkeys will have a far superior Banana Generation Rate than MKTC. BGR will be based on the total of the following:</p>
             <p><b>Baseline BGR (BM):</b> 1 BANANA gained every 24 hours, assuming 144 blocks per day (all Monkeys have the baseline BGR rate)</p>
-            <p><b>Baseline BGR (MKTC):</b> TBD</p>
+            <p><b>Baseline BGR (MKTC):</b> 1 BANANA gained every 96 hours, assuming 144 blocks per day (all Monkey Kids have the baseline BGR rate)</p>
             <p><b>Bonus BGR:</b> A bonus percentage on top of the baseline BGR will be applicable to certain Bitcoin Monkey and Monkey Kids Treehouse Club traits. With BANANA as our backbone utility token for the ecosystem, there are still plenty of treasures in The Jungle to uncover within the Bitcoin Monkeys brand! And so, the legend of the Monkeys continues…</p>
             <h3 id="subtitle">How much does Staking cost?</h3>
             <p>Staking and Unstaking will be non custodial for both collections and will be FREE!</p>
