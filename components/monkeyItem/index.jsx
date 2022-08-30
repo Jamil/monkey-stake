@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { openContractCall } from '@stacks/connect'
-import { contractDetails } from "../../pages";
+import { BMContractDetails } from "../../pages";
 import { intCV, uintCV } from "@stacks/transactions";
 
 const unstakeOptions = (mainnet, id) => ({
-  contractAddress: contractDetails.contractAddress,
-  contractName: contractDetails.contractName,
+  contractAddress: BMContractDetails.contractAddress,
+  contractName: BMContractDetails.contractName,
   functionName: 'unstake',
   functionArgs: [uintCV(id)],
   network: mainnet,
@@ -21,8 +21,8 @@ const unstakeOptions = (mainnet, id) => ({
 })
 
 const stakeOptions = (mainnet, id) => ({
-  contractAddress: contractDetails.contractAddress,
-  contractName: contractDetails.contractName,
+  contractAddress: BMContractDetails.contractAddress,
+  contractName: BMContractDetails.contractName,
   functionName: 'stake',
   functionArgs: [uintCV(id)],
   network: mainnet,

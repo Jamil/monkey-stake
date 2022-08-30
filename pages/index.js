@@ -6,9 +6,14 @@ import { callReadOnlyFunction, ClarityType, cvToValue } from '@stacks/transactio
 import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 import MonkeyItem from '../components/monkeyItem';
 
-export const contractDetails = {
-  contractAddress: "SP1XPG9QFX5M95G36SGN9R8YJ4KJ0JB7ZXNH892N6",
-  contractName: "chronic-blue-tuna"
+export const BMContractDetails = {
+  contractAddress: "SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S",
+  contractName: "bm-stake-v1"
+}
+
+export const MKContractDetails = {
+  contractAddress: "SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S",
+  contractName: "bm-stake-v1"
 }
 
 const images = [
@@ -62,8 +67,8 @@ const traitData = [
 ]
 
 const options = (mainnet) => ({
-  contractAddress: contractDetails.contractAddress,
-  contractName: contractDetails.contractName,
+  contractAddress: BMContractDetails.contractAddress,
+  contractName: BMContractDetails.contractName,
   functionName: 'harvest',
   functionArgs: [],
   network: mainnet,
@@ -76,6 +81,23 @@ const options = (mainnet) => ({
   },
   postConditions: []
 })
+
+const MKTCOptions = (mainnet) => ({
+  contractAddress: MKContractDetails.contractAddress,
+  contractName: MKContractDetails.contractName,
+  functionName: 'harvest',
+  functionArgs: [],
+  network: mainnet,
+  appDetails: {
+    name: 'Bitcoin Monkeys',
+    icon: '',
+  },
+  onFinish: data => {
+    console.log("broadcast")
+  },
+  postConditions: []
+})
+
 
 const appConfig = new AppConfig(['publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -90,7 +112,8 @@ const Home = () => {
   const [stakedAmount, setStakedAmount] = useState(0);
   const [lifetimeEarned, setLifetimeEarned] = useState(0);
   const [bananasHeld, setBananasHeld] = useState(0);
-  const [currentPool, setCurrentPool] = useState(0);
+  const [BMCurrentPool, setBMCurrentPool] = useState(0);
+  const [MKCurrentPool, setMKCurrentPool] = useState(0);
   const [earningAmount, setEarningAmount] = useState(0);
 
   const [stakedIds, setStakedIds] = useState([]);
@@ -155,22 +178,21 @@ const Home = () => {
 
   const publicApiCalls = async () => {
     // Supposed to load staked total
-    // try {
-    //   const options = {
-    //     contractAddress: contractDetails.contractAddress,
-    //     contractName: contractDetails.contractName,
-    //     functionName: "get-monkey-balance",
-    //     functionArgs: [],
-    //     network: mainnet,
-    //     senderAddress: contractDetails.contractAddress,
-    //   };
+    try {
+      const options = {
+        contractAddress: BMContractDetails.contractAddress,
+        contractName: BMContractDetails.contractName,
+        functionName: "get-number-staked",
+        functionArgs: [],
+        network: mainnet,
+        senderAddress: BMContractDetails.contractAddress,
+      };
   
-    //   const result = await callReadOnlyFunction(options);
-    //   console.log(result.value)
-    //   setStakedAmount(parseInt(result.value.value))
-    // } catch (e) {
-    //   console.error(e); 
-    // }
+      const result = await callReadOnlyFunction(options);
+      setStakedAmount(parseInt(result.value))
+    } catch (e) {
+      console.error(e); 
+    }
   }
 
   const privateApiCalls = async () => {
@@ -179,8 +201,8 @@ const Home = () => {
 
     try {
       const options = {
-        contractAddress: contractDetails.contractAddress,
-        contractName: contractDetails.contractName,
+        contractAddress: BMContractDetails.contractAddress,
+        contractName: BMContractDetails.contractName,
         functionName: "get-staked-ids",
         functionArgs: [principalCV(`${walletId}`)],
         network: mainnet,
@@ -220,8 +242,8 @@ const Home = () => {
       const lifetime = parseInt(data['lifetime-points'].value);
 
       const options2 = {
-        contractAddress: contractDetails.contractAddress,
-        contractName: contractDetails.contractName,
+        contractAddress: BMContractDetails.contractAddress,
+        contractName: BMContractDetails.contractName,
         functionName: "get-lifetime-harvested",
         functionArgs: [principalCV(`${walletId}`)],
         network: mainnet,
@@ -236,8 +258,8 @@ const Home = () => {
 
     try {
       const options = {
-        contractAddress: contractDetails.contractAddress,
-        contractName: contractDetails.contractName,
+        contractAddress: BMContractDetails.contractAddress,
+        contractName: BMContractDetails.contractName,
         functionName: "get-user-balance",
         functionArgs: [principalCV(`${walletId}`)],
         network: mainnet,
@@ -247,7 +269,28 @@ const Home = () => {
       const result = await callReadOnlyFunction(options);
       
       if (result.type === ClarityType.UInt) {
-        setCurrentPool(parseInt(result.value))
+        setBMCurrentPool(parseInt(result.value))
+      } else if (result.type === ClarityType.ResponseErr) {
+        throw new Error(`kv-store contract error: ${result.value.data}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  
+    try {
+      const options = {
+        contractAddress: MKContractDetails.contractAddress,
+        contractName: MKContractDetails.contractName,
+        functionName: "get-user-balance",
+        functionArgs: [principalCV(`${walletId}`)],
+        network: mainnet,
+        senderAddress: walletId,
+      };
+  
+      const result = await callReadOnlyFunction(options);
+      
+      if (result.type === ClarityType.UInt) {
+        setMKCurrentPool(parseInt(result.value))
       } else if (result.type === ClarityType.ResponseErr) {
         throw new Error(`kv-store contract error: ${result.value.data}`);
       }
@@ -325,9 +368,21 @@ const Home = () => {
             <div style={{
               display: "flex",
               justifyContent: "space-between",
-              marginTop: "16px"
+              marginTop: "48px"
             }}>
               <h2 className='stake-progress-text'>{~~(stakedAmount/25)}% Bitcoin Monkeys Staked</h2>
+              <h2 className='stake-progress-text'>{stakedAmount}/2500</h2>
+            </div>
+            <div id="stake-progress">
+              <div style={{flex: stakedAmount}}></div>
+              <div style={{flex: 2500 - stakedAmount}}></div>
+            </div>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "24px",
+            }}>
+              <h2 className='stake-progress-text'>{~~(stakedAmount/25)}% Monkey Kids Staked</h2>
               <h2 className='stake-progress-text'>{stakedAmount}/2500</h2>
             </div>
             <div id="stake-progress">
@@ -352,11 +407,16 @@ const Home = () => {
               <div className='personal-stats-card'>
                 <h3>Unclaimed Bananas</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>{~~(currentPool / 1000)/1000}</p>
+                  <p>{~~(BMCurrentPool / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest</button>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>BM Harvest</button>
                 </div>
-                <h4>Earning {~~(earningAmount/1000)/10} $BANANA/Day</h4>
+                <div style={{display: "flex", alignItems: "center", marginTop: "6px"}}>
+                  <p>{~~(MKCurrentPool / 1000)/1000}</p>
+                  <img src='/assets/banana.png'/>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>MKTC Harvest</button>
+                </div>
+                <h4 style={{marginTop: "12px"}}>Earning {~~(earningAmount/1000)/10} $BANANA/Day</h4>
               </div>
             </div>}
             {auth.login && <div id="wallet-data-row">

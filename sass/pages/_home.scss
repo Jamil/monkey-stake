@@ -94,6 +94,7 @@
 
       #personal-stats-row {
         display: flex;
+        margin-top: 48px;
 
         .personal-stats-card {
           flex: 1;
@@ -179,7 +180,8 @@
           -ms-flex-wrap: wrap;
           -o-flex-wrap: wrap;
           grid-gap: 0;
-          gap: 0;
+          gap: 0px;
+          column-gap: 16px;
           max-height: 930px;
           overflow-x: auto;
           justify-content: space-evenly;
@@ -194,7 +196,7 @@
         color: #e7e5fa;
         border-radius: 5px;
         background-color: #423e67;
-        margin-top: 32px;
+        margin-top: 48px;
 
         button {
           margin: 0px 16px;
