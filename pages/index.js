@@ -157,6 +157,38 @@ const Home = () => {
   const [mainnet, setMainnet] = useState(new StacksMainnet());
   const [showUnstakeWarning, setShowUnstakeWarning] = useState(0);
 
+  const [unstakedMonkeyData, setUnstakedMonkeyData] = useState([]);
+  const [stakedMonkeyData, setStakedMonkeyData] = useState([]);
+
+  const bgr = unstakedMonkeyData.reduce(
+    (p, c) => {
+      return parseFloat(p) + parseFloat(c.nft_token_attributes.filter(item => item.trait_type == "BGR (%)")[0].value || 1)
+    },
+    0
+  );
+
+  useEffect(() => {
+    (async () => {
+      const data = await Promise.all(stakedIds.map((id) => new Promise(async (res, rej) => {
+        const result = await axios.get(`https://gamma.io/api/v1/collections/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys/${id}`);
+        res(result.data.data);
+      })))
+      
+      setStakedMonkeyData(data);
+    })()
+  }, [stakedIds])
+
+  useEffect(() => {
+    (async () => {
+      const data = await Promise.all(unstakedIds.map((id) => new Promise(async (res, rej) => {
+        const result = await axios.get(`https://gamma.io/api/v1/collections/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys/${id}`);
+        res(result.data.data);
+      })))
+      
+      setUnstakedMonkeyData(data);
+    })()
+  }, [unstakedIds])
+
   useEffect(() => {
     (async () => {
       if (userSession.isSignInPending()) {
@@ -457,16 +489,16 @@ const Home = () => {
                   <img src='/assets/banana.png'/>
                   <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest (MKTC)</button>
                 </div> */}
-                <h4 style={{marginTop: "12px"}}>Earning {~~(earningAmount/1000)/10} $BANANA/Day</h4>
+                <h4 style={{marginTop: "12px"}}>Earning {bgr} $BANANA/Day</h4>
               </div>
             </div>}
             {auth.login && <div id="wallet-data-row">
-              {unstakedIds.length > 0 ? (
+              {unstakedMonkeyData.length > 0 ? (
                 <div className='wallet-data-card'>
                   <h3>Monkeys you can stake</h3>
                   <div className='monkey-list'>
-                    {unstakedIds.map(id => (
-                      <MonkeyItem network={mainnet} staked={false} monkey={id}/>
+                    {unstakedMonkeyData.map(data => (
+                      <MonkeyItem network={mainnet} staked={false} monkeyData={data}/>
                     ))}
                   </div>
                 </div>
@@ -479,10 +511,10 @@ const Home = () => {
                 </div>
               )}
               <div className='wallet-data-card'>
-                <h3>{stakedIds.length} Monkeys staked</h3>
+                <h3>{stakedMonkeyData.length} Monkeys staked</h3>
                 <div className='monkey-list'>
-                  {stakedIds.map(id => (
-                    <MonkeyItem triggerUnstake={() => triggerUnstake(id)} network={mainnet} staked={true} monkey={id}/>
+                  {stakedMonkeyData.map(data => (
+                    <MonkeyItem triggerUnstake={() => triggerUnstake(id)} network={mainnet} staked={true} monkeyData={data}/>
                   ))}
                 </div>
               </div>
