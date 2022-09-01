@@ -72,7 +72,6 @@ const traitData = [
 ]
 
 const options = (mainnet, amount) => {
-  //console.log("create options", createAssetInfo(BANANA_ASSET_ADDRESS, BANANA_ASSET_NAME))
   const contractFungiblePostCondition = makeContractFungiblePostCondition(
     BMContractDetails.contractAddress,
     BMContractDetails.contractName,
@@ -80,8 +79,6 @@ const options = (mainnet, amount) => {
     amount,
     createAssetInfo(BANANA_CONTRACT_ADDRESS, BANANA_CONTRACT_NAME, BANANA_ASSET_NAME)
   );
-
-  console.log(contractFungiblePostCondition)
 
   return {
     contractAddress: BMContractDetails.contractAddress,
@@ -148,8 +145,8 @@ const Home = () => {
   const [stakedAmount, setStakedAmount] = useState(0);
   const [lifetimeEarned, setLifetimeEarned] = useState(0);
   const [bananasHeld, setBananasHeld] = useState(0);
-  const [BMCurrentPool, setBMCurrentPool] = useState(0);
-  const [MKCurrentPool, setMKCurrentPool] = useState(0);
+  //const [BMCurrentPool, setBMCurrentPool] = useState(0);
+  //const [MKCurrentPool, setMKCurrentPool] = useState(0);
 
   const [stakedIds, setStakedIds] = useState([]);
   const [unstakedIds, setUnstakedIds] = useState([]);
@@ -166,11 +163,32 @@ const Home = () => {
     0
   );
 
+  const bitcoinMonkeyBalance = stakedMonkeyData.reduce(
+    (p, c) => {
+      return parseFloat(p) + parseFloat(c.balance)
+    },
+    0
+  );
+
   useEffect(() => {
     (async () => {
       const data = await Promise.all(stakedIds.map((id) => new Promise(async (res, rej) => {
         const result = await axios.get(`https://gamma.io/api/v1/collections/SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C.bitcoin-monkeys/${id}`);
-        res(result.data.data);
+        const meta = result.data.data;
+
+        const options = {
+          contractAddress: BMContractDetails.contractAddress,
+          contractName: BMContractDetails.contractName,
+          functionName: "get-monkey-balance",
+          functionArgs: [uintCV(meta.token_id)],
+          network: mainnet,
+          senderAddress: walletId,
+        };
+    
+        const balanceResult = await callReadOnlyFunction(options);                
+        meta.balance = parseFloat(balanceResult.value);
+
+        res(meta);
       })))
       
       setStakedMonkeyData(data);
@@ -324,47 +342,47 @@ const Home = () => {
       console.error(e);
     }
 
-    try {
-      const options = {
-        contractAddress: BMContractDetails.contractAddress,
-        contractName: BMContractDetails.contractName,
-        functionName: "get-user-balance",
-        functionArgs: [principalCV(`${walletId}`)],
-        network: mainnet,
-        senderAddress: walletId,
-      };
+    // try {
+    //   const options = {
+    //     contractAddress: BMContractDetails.contractAddress,
+    //     contractName: BMContractDetails.contractName,
+    //     functionName: "get-user-balance",
+    //     functionArgs: [principalCV(`${walletId}`)],
+    //     network: mainnet,
+    //     senderAddress: walletId,
+    //   };
   
-      const result = await callReadOnlyFunction(options);
+    //   const result = await callReadOnlyFunction(options);
       
-      if (result.type === ClarityType.UInt) {
-        setBMCurrentPool(parseInt(result.value))
-      } else if (result.type === ClarityType.ResponseErr) {
-        throw new Error(`kv-store contract error: ${result.value.data}`);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    //   if (result.type === ClarityType.UInt) {
+    //     //setBMCurrentPool(parseInt(result.value))
+    //   } else if (result.type === ClarityType.ResponseErr) {
+    //     throw new Error(`kv-store contract error: ${result.value.data}`);
+    //   }
+    // } catch (e) {
+    //   console.error(e);
+    // }
   
-    try {
-      const options = {
-        contractAddress: MKContractDetails.contractAddress,
-        contractName: MKContractDetails.contractName,
-        functionName: "get-user-balance",
-        functionArgs: [principalCV(`${walletId}`)],
-        network: mainnet,
-        senderAddress: walletId,
-      };
+    // try {
+    //   const options = {
+    //     contractAddress: MKContractDetails.contractAddress,
+    //     contractName: MKContractDetails.contractName,
+    //     functionName: "get-user-balance",
+    //     functionArgs: [principalCV(`${walletId}`)],
+    //     network: mainnet,
+    //     senderAddress: walletId,
+    //   };
   
-      const result = await callReadOnlyFunction(options);
+    //   const result = await callReadOnlyFunction(options);
       
-      if (result.type === ClarityType.UInt) {
-        setMKCurrentPool(parseInt(result.value))
-      } else if (result.type === ClarityType.ResponseErr) {
-        throw new Error(`kv-store contract error: ${result.value.data}`);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    //   if (result.type === ClarityType.UInt) {
+    //     //setMKCurrentPool(parseInt(result.value))
+    //   } else if (result.type === ClarityType.ResponseErr) {
+    //     throw new Error(`kv-store contract error: ${result.value.data}`);
+    //   }
+    // } catch (e) {
+    //   console.error(e);
+    // }
   }
 
   const triggerUnstake = (id) => {
@@ -479,9 +497,9 @@ const Home = () => {
               <div className='personal-stats-card'>
                 <h3>Unclaimed Bananas</h3>
                 <div style={{display: "flex", alignItems: "center"}}>
-                  <p>{~~(BMCurrentPool / 1000)/1000}</p>
+                  <p>{~~(bitcoinMonkeyBalance / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta' onClick={() => openContractCall(options(mainnet, BMCurrentPool))}>Harvest (BM)</button>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet, bitcoinMonkeyBalance))}>Harvest (BM)</button>
                 </div>
                 {/* <div style={{display: "flex", alignItems: "center", marginTop: "6px"}}>
                   <p>{~~(MKCurrentPool / 1000)/1000}</p>
@@ -513,7 +531,7 @@ const Home = () => {
                 <h3>{stakedMonkeyData.length} Monkeys staked</h3>
                 <div className='monkey-list'>
                   {stakedMonkeyData.map(data => (
-                    <MonkeyItem triggerUnstake={() => triggerUnstake(id)} network={mainnet} staked={true} monkeyData={data}/>
+                    <MonkeyItem triggerUnstake={() => triggerUnstake(data.token_id)} network={mainnet} staked={true} monkeyData={data}/>
                   ))}
                 </div>
               </div>

@@ -39,8 +39,6 @@ const stakeOptions = (mainnet, id, wallet) => ({
 const MonkeyItem = ({monkeyData, triggerUnstake, staked, network}) => {
   const { token_metadata, nft_token_attributes, token_id } = monkeyData;
 
-  console.log(monkeyData)
-
   const triggerAction = () => {
     if(staked) {
       triggerUnstake()
@@ -63,7 +61,7 @@ const MonkeyItem = ({monkeyData, triggerUnstake, staked, network}) => {
       <img height="150" width="150" src={image}/>
       <div style={{display: "flex", flexDirection: "column", alignItems: "stretch"}}>
         <p style={{textAlign: "center", fontWeight: 500, lineHeight: 1.0, margin: "2px"}}>{token_metadata.name}</p>
-        <p style={{marginBottom: 0, textAlign: "center", padding: "0px 6px"}}>BGR: {bgr*100}%</p>
+        <p style={{marginBottom: 0, textAlign: "center", padding: "0px 6px"}}>BGR: {~~(bgr*100)}%</p>
         {staked && <button onClick={triggerAction} style={{margin: "6px"}}>Unstake</button>}
         {!staked && <button onClick={triggerAction} className="inverted" style={{margin: "6px"}}>Stake</button>}
       </div>
