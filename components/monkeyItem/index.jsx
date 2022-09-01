@@ -20,7 +20,7 @@ import { uintCV } from "@stacks/transactions";
 //   postConditions: []
 // })
 
-const stakeOptions = (mainnet, id) => ({
+const stakeOptions = (mainnet, id, wallet) => ({
   contractAddress: BMContractDetails.contractAddress,
   contractName: BMContractDetails.contractName,
   functionName: 'stake',

@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { AppConfig, UserSession, showConnect, openContractCall } from '@stacks/connect'
 import axios from 'axios';
 import { StacksMainnet } from '@stacks/network';
-import { callReadOnlyFunction, ClarityType, cvToValue, uintCV } from '@stacks/transactions';
+import { callReadOnlyFunction, ClarityType, createAssetInfo, cvToValue, FungibleConditionCode, makeContractFungiblePostCondition, uintCV } from '@stacks/transactions';
 import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 import MonkeyItem from '../components/monkeyItem';
 import UnstakeModal from '../components/modal';
+
+const BANANA_CONTRACT_ADDRESS = "SP2KAF9RF86PVX3NEE27DFV1CQX0T4WGR41X3S45C";
+const BANANA_CONTRACT_NAME = "btc-monkeys-bananas";
+const BANANA_ASSET_NAME = "BANANA";
 
 export const BMContractDetails = {
   contractAddress: "SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S",
@@ -67,21 +71,36 @@ const traitData = [
   {img: "/assets/traits/Blind.png", percent: 5},
 ]
 
-const options = (mainnet) => ({
-  contractAddress: BMContractDetails.contractAddress,
-  contractName: BMContractDetails.contractName,
-  functionName: 'harvest',
-  functionArgs: [],
-  network: mainnet,
-  appDetails: {
-    name: 'Bitcoin Monkeys',
-    icon: '',
-  },
-  onFinish: data => {
-    console.log("broadcast")
-  },
-  postConditions: []
-})
+const options = (mainnet, amount) => {
+  //console.log("create options", createAssetInfo(BANANA_ASSET_ADDRESS, BANANA_ASSET_NAME))
+  const contractFungiblePostCondition = makeContractFungiblePostCondition(
+    BMContractDetails.contractAddress,
+    BMContractDetails.contractName,
+    FungibleConditionCode.GreaterEqual,
+    amount,
+    createAssetInfo(BANANA_CONTRACT_ADDRESS, BANANA_CONTRACT_NAME, BANANA_ASSET_NAME)
+  );
+
+  console.log(contractFungiblePostCondition)
+
+  return {
+    contractAddress: BMContractDetails.contractAddress,
+    contractName: BMContractDetails.contractName,
+    functionName: 'harvest',
+    functionArgs: [],
+    network: mainnet,
+    appDetails: {
+      name: 'Bitcoin Monkeys',
+      icon: '',
+    },
+    onFinish: data => {
+      console.log("broadcast")
+    },
+    postConditions: [
+      contractFungiblePostCondition
+    ]
+  }
+}
 
 const MKTCOptions = (mainnet) => ({
   contractAddress: MKContractDetails.contractAddress,
@@ -431,7 +450,7 @@ const Home = () => {
                 <div style={{display: "flex", alignItems: "center"}}>
                   <p>{~~(BMCurrentPool / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest (BM)</button>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet, BMCurrentPool))}>Harvest (BM)</button>
                 </div>
                 {/* <div style={{display: "flex", alignItems: "center", marginTop: "6px"}}>
                   <p>{~~(MKCurrentPool / 1000)/1000}</p>
@@ -462,7 +481,7 @@ const Home = () => {
               <div className='wallet-data-card'>
                 <h3>{stakedIds.length} Monkeys staked</h3>
                 <div className='monkey-list'>
-                  {unstakedIds.map(id => (
+                  {stakedIds.map(id => (
                     <MonkeyItem triggerUnstake={() => triggerUnstake(id)} network={mainnet} staked={true} monkey={id}/>
                   ))}
                 </div>
