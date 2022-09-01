@@ -1,0 +1,48 @@
+.unstake-modal-wrapper {
+  position: fixed;
+  top: 0; 
+  bottom: 0; 
+  left: 0; 
+  right: 0; 
+  opacity: 0.0;
+  justify-content: center;
+  align-items: center;
+  transition-duration: 200ms;
+  display: flex;
+  background-color: #000A;
+  pointer-events: none;
+
+  &.visible {
+    opacity: 1.0;
+    pointer-events: all;
+  }
+
+  #modal-card {
+    border-radius: 16px;
+    background-color: #423e67;
+    width: 500px;
+    box-shadow: 0px 0px 128px #fff2;
+    padding: 32px 32px;
+    
+    h1, p {
+      font-family: "Montserrat", sans-serif;
+      color: #fff;
+      margin: 0px;
+    }
+
+    p {
+      margin-top: 16px;
+      margin-bottom: 64px;
+    }
+
+    #button-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 32px;
+
+      button {
+        margin-left: 16px;
+      }
+    }
+  }
+}

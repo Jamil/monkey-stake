@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { AppConfig, UserSession, showConnect, openContractCall } from '@stacks/connect'
 import axios from 'axios';
 import { StacksMainnet } from '@stacks/network';
-import { callReadOnlyFunction, ClarityType, cvToValue } from '@stacks/transactions';
+import { callReadOnlyFunction, ClarityType, cvToValue, uintCV } from '@stacks/transactions';
 import { principalCV } from '@stacks/transactions/dist/clarity/types/principalCV';
 import MonkeyItem from '../components/monkeyItem';
+import UnstakeModal from '../components/modal';
 
 export const BMContractDetails = {
   contractAddress: "SPNWZ5V2TPWGQGVDR6T7B6RQ4XMGZ4PXTEE0VQ0S",
@@ -98,6 +99,22 @@ const MKTCOptions = (mainnet) => ({
   postConditions: []
 })
 
+const unstakeBMOptoions = (mainnet, id) => ({
+  contractAddress: BMContractDetails.contractAddress,
+  contractName: BMContractDetails.contractName,
+  functionName: 'unstake',
+  functionArgs: [uintCV(id)],
+  network: mainnet,
+  appDetails: {
+    name: 'Bitcoin Monkeys',
+    icon: '',
+  },
+  onFinish: data => {
+    console.log("broadcast")
+  },
+  postConditions: []
+})
+
 
 const appConfig = new AppConfig(['publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -119,6 +136,7 @@ const Home = () => {
   const [stakedIds, setStakedIds] = useState([]);
   const [unstakedIds, setUnstakedIds] = useState([]);
   const [mainnet, setMainnet] = useState(new StacksMainnet());
+  const [showUnstakeWarning, setShowUnstakeWarning] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -299,6 +317,10 @@ const Home = () => {
     }
   }
 
+  const triggerUnstake = (id) => {
+    setShowUnstakeWarning(id)
+  }
+
   return (
     <div id="home">
       <div className="content">
@@ -382,8 +404,8 @@ const Home = () => {
               justifyContent: "space-between",
               marginTop: "24px",
             }}>
-              <h2 className='stake-progress-text'>{~~(stakedAmount/25)}% Monkey Kids Staked</h2>
-              <h2 className='stake-progress-text'>{stakedAmount}/2500</h2>
+              <h2 className='stake-progress-text'>0% Monkey Kids Staked</h2>
+              <h2 className='stake-progress-text'>0/2500</h2>
             </div>
             <div id="stake-progress">
               <div style={{flex: stakedAmount}}></div>
@@ -409,13 +431,13 @@ const Home = () => {
                 <div style={{display: "flex", alignItems: "center"}}>
                   <p>{~~(BMCurrentPool / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>BM Harvest</button>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest (BM)</button>
                 </div>
-                <div style={{display: "flex", alignItems: "center", marginTop: "6px"}}>
+                {/* <div style={{display: "flex", alignItems: "center", marginTop: "6px"}}>
                   <p>{~~(MKCurrentPool / 1000)/1000}</p>
                   <img src='/assets/banana.png'/>
-                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>MKTC Harvest</button>
-                </div>
+                  <button className='cta' onClick={() => openContractCall(options(mainnet))}>Harvest (MKTC)</button>
+                </div> */}
                 <h4 style={{marginTop: "12px"}}>Earning {~~(earningAmount/1000)/10} $BANANA/Day</h4>
               </div>
             </div>}
@@ -440,8 +462,8 @@ const Home = () => {
               <div className='wallet-data-card'>
                 <h3>{stakedIds.length} Monkeys staked</h3>
                 <div className='monkey-list'>
-                  {stakedIds.map(id => (
-                    <MonkeyItem network={mainnet} staked={true} monkey={id}/>
+                  {unstakedIds.map(id => (
+                    <MonkeyItem triggerUnstake={() => triggerUnstake(id)} network={mainnet} staked={true} monkey={id}/>
                   ))}
                 </div>
               </div>
@@ -504,6 +526,12 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <UnstakeModal show={!!showUnstakeWarning} onCancel={() => {
+        setShowUnstakeWarning(undefined)
+      }} onConfirm={() => {
+        openContractCall(unstakeBMOptoions(mainnet, showUnstakeWarning))
+        setShowUnstakeWarning(undefined)
+      }}/>
     </div>
   )
 }

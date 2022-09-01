@@ -2,23 +2,23 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { openContractCall } from '@stacks/connect'
 import { BMContractDetails } from "../../pages";
-import { intCV, uintCV } from "@stacks/transactions";
+import { uintCV } from "@stacks/transactions";
 
-const unstakeOptions = (mainnet, id) => ({
-  contractAddress: BMContractDetails.contractAddress,
-  contractName: BMContractDetails.contractName,
-  functionName: 'unstake',
-  functionArgs: [uintCV(id)],
-  network: mainnet,
-  appDetails: {
-    name: 'Bitcoin Monkeys',
-    icon: '',
-  },
-  onFinish: data => {
-    console.log("broadcast")
-  },
-  postConditions: []
-})
+// const unstakeOptions = (mainnet, id) => ({
+//   contractAddress: BMContractDetails.contractAddress,
+//   contractName: BMContractDetails.contractName,
+//   functionName: 'unstake',
+//   functionArgs: [uintCV(id)],
+//   network: mainnet,
+//   appDetails: {
+//     name: 'Bitcoin Monkeys',
+//     icon: '',
+//   },
+//   onFinish: data => {
+//     console.log("broadcast")
+//   },
+//   postConditions: []
+// })
 
 const stakeOptions = (mainnet, id) => ({
   contractAddress: BMContractDetails.contractAddress,
@@ -36,7 +36,7 @@ const stakeOptions = (mainnet, id) => ({
   postConditions: []
 })
 
-const MonkeyItem = ({monkey, staked, network}) => {
+const MonkeyItem = ({triggerUnstake, monkey, staked, network}) => {
   const [data, setData] = useState();
 
   useEffect(() => {
@@ -48,7 +48,8 @@ const MonkeyItem = ({monkey, staked, network}) => {
 
   const triggerAction = () => {
     if(staked) {
-      openContractCall(unstakeOptions(network, monkey))
+      triggerUnstake()
+      //openContractCall(unstakeOptions(network, monkey))
     } else {
       openContractCall(stakeOptions(network, monkey))
     }
