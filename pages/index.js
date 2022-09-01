@@ -150,7 +150,6 @@ const Home = () => {
   const [bananasHeld, setBananasHeld] = useState(0);
   const [BMCurrentPool, setBMCurrentPool] = useState(0);
   const [MKCurrentPool, setMKCurrentPool] = useState(0);
-  const [earningAmount, setEarningAmount] = useState(0);
 
   const [stakedIds, setStakedIds] = useState([]);
   const [unstakedIds, setUnstakedIds] = useState([]);
@@ -160,7 +159,7 @@ const Home = () => {
   const [unstakedMonkeyData, setUnstakedMonkeyData] = useState([]);
   const [stakedMonkeyData, setStakedMonkeyData] = useState([]);
 
-  const bgr = unstakedMonkeyData.reduce(
+  const bgr = stakedMonkeyData.reduce(
     (p, c) => {
       return parseFloat(p) + parseFloat(c.nft_token_attributes.filter(item => item.trait_type == "BGR (%)")[0].value || 1)
     },
